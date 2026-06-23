@@ -1,0 +1,14 @@
+flask
+flask-cors
+groq
+google-genai
+faiss-cpu
+langchain
+langchain-groq
+langchain-google-genai
+langchain-community
+langsmith
+requests
+python-dotenv
+numpy
+tiktoken

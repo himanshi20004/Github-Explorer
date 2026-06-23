@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RepoMind — GitHub Repo Explainer</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <!-- Highlight.js for code syntax highlighting -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <!-- Marked.js for markdown rendering -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+</head>
+<body>
+  <div class="app">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <span class="logo-icon">⬡</span>
+          <span class="logo-text">RepoMind</span>
+        </div>
+        <p class="logo-sub">AI-powered code explorer</p>
+      </div>
+
+      <div class="load-section">
+        <label class="input-label">GitHub Repository URL</label>
+        <input id="repoUrl" type="text" class="url-input" placeholder="https://github.com/owner/repo" />
+        <button id="loadBtn" class="load-btn" onclick="loadRepo()">
+          <span id="loadBtnText">Analyze Repository</span>
+          <span id="loadSpinner" class="spinner hidden"></span>
+        </button>
+      </div>
+
+      <div id="repoInfo" class="repo-info hidden">
+        <div class="repo-badge">
+          <span class="badge-dot"></span>
+          <span id="repoName" class="badge-name"></span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Files indexed</span>
+          <span id="filesCount" class="stat-value"></span>
+        </div>
+        <div class="summary-box">
+          <div class="summary-label">What this repo does</div>
+          <p id="repoSummary" class="summary-text"></p>
+        </div>
+      </div>
+
+      <div class="suggested-questions hidden" id="suggestedSection">
+        <div class="sq-label">Try asking</div>
+        <div class="sq-list" id="sqList"></div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="powered-by">Powered by <strong>Groq</strong> · <strong>Gemini</strong> · <strong>FAISS</strong></div>
+        <div class="langsmith-badge"><span class="ls-dot"></span> LangSmith tracing active</div>
+      </div>
+    </aside>
+
+    <!-- Main Chat -->
+    <main class="main">
+      <div class="chat-header">
+        <div id="chatHeaderTitle" class="chat-title">Load a repository to begin</div>
+      </div>
+
+      <div class="chat-area" id="chatArea">
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon">⬡</div>
+          <h2>Paste a GitHub URL and hit Analyze</h2>
+          <p>RepoMind reads the entire codebase, indexes it semantically, and lets you ask any question about how it works.</p>
+          <div class="empty-steps">
+            <div class="step"><span class="step-num">1</span><span>Paste a public GitHub URL</span></div>
+            <div class="step"><span class="step-num">2</span><span>Wait while files are indexed</span></div>
+            <div class="step"><span class="step-num">3</span><span>Ask anything about the code</span></div>
+          </div>
+        </div>
+        <div id="messages"></div>
+      </div>
+
+      <div class="input-area">
+        <div class="input-row">
+          <textarea
+            id="questionInput"
+            class="question-input"
+            placeholder="Ask: How does authentication work? What does main.py do? Show me the file structure."
+            rows="1"
+            disabled
+            onkeydown="handleKey(event)"
+          ></textarea>
+          <button id="askBtn" class="ask-btn" onclick="askQuestion()" disabled>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </div>
+        <div class="input-hint">Press <kbd>Enter</kbd> to send · <kbd>Shift+Enter</kbd> for newline</div>
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

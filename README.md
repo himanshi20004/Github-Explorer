@@ -47,7 +47,7 @@ Once you hit analyze, RepoMind chunk-parses up to 150 project files, passes them
 Once indexed, the assistant gives a high-level review of what the repository does and opens a conversational chat panel where file architectures are dynamically visualized.
 
 <p align="center">
-  <img src="./assets/Screenshot 2026-06-23 120719.png" alt="Structural Analysis Interaction" width="90%">
+  <img src="./assets/Screenshot 2026-06-23 120738.png" alt="Structural Analysis Interaction" width="90%">
 </p>
 
 ---
@@ -69,22 +69,29 @@ Once indexed, the assistant gives a high-level review of what the repository doe
 Follow these precise sequential steps to configure and run both the AI engine backend and your user interface dashboard side-by-side.
 
 ### 1. Global Project Initialization
+
 Clone the parent workspace repository and establish your target system configuration parameters file:
+
 ```bash
 git clone https://github.com/himanshi20084/Todo-list-website.git GITHUBEXPLORER
 cd GITHUBEXPLORER
 touch .env
+```
 
-Open the freshly generated global .env configuration file within your root project container directory and supply your specific API security vectors:
+Open the `.env` file and supply your API keys:
+
+```env
 GROQ_API_KEY=your_groq_api_key_here
 GEMINI_API_KEY=your_gemini_api_key_here
 LANGCHAIN_TRACING_V2=true
 LANGCHAIN_API_KEY=your_langsmith_key_here
-
+```
 
 ### 2. Backend Engine Server Setup
-Navigate directly to your Python module ecosystem container, initialize your isolated application workspace dependency stack, and wake up your development gateway core server execution routing app:
 
+Navigate to the backend, create a virtual environment, and start the server:
+
+```bash
 cd backend
 python -m venv venv
 
@@ -96,24 +103,30 @@ source venv/bin/activate
 
 pip install -r requirements.txt
 python app.py
+```
 
-📂 Project Structure Overview
+---
+
+## 📂 Project Structure
+
+```
+GITHUBEXPLORER/
 ├── assets/                 # Storage framework for system interface walkthrough images
-├── backend/                # Primary core processing engine backend engine routing app
+├── backend/
 │   ├── agent.py            # Natural language processing orchestration module
 │   ├── app.py              # Server network endpoints initialization routing controller
 │   ├── embedder.py         # Code structural context token vectorization engine via Gemini
 │   ├── fetcher.py          # GitHub raw file extraction engine framework mechanics
 │   ├── vector_store.py     # Clean FAISS index storage matrix data manager system
 │   └── requirements.txt    # Mandatory operational Python dependency tracking map
-├── frontend/               # Full client interaction web portal dashboard blocks
+├── frontend/
 │   ├── index.html          # Main application skeleton template structure shell
 │   ├── tailwind.config.js  # Framework styling configuration parameters script rules
 │   ├── package.json        # Node component tracking registry and build operational commands
 │   └── src/
 │       ├── main.jsx        # Structural React DOM portal engine mounting initializer
 │       ├── App.jsx         # Component container rendering block template
-│       └── style.css       # Deep customized ergonomic light scheme structural variables 
+│       └── style.css       # Deep customized ergonomic light scheme structural variables
 ├── .env                    # System global infrastructure key vector token configuration file
 └── README.md               # Product installation manuals and platform operational maps
-
+```

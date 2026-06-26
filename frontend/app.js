@@ -1,6 +1,6 @@
 const API = "https://github-explorer-evv8.onrender.com/api";
 
-const SUGGESTED_QUESTIONS = [
+const SUGGESTIONS = [
   "How does this project work overall?",
   "Show me the file structure",
   "What is the main entry point?",

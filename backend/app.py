@@ -28,36 +28,31 @@ def load_repo():
     github_url = data.get("url", "").strip()
     if not github_url:
         return jsonify({"error": "No URL provided"}), 400
+    try:
+        files, owner, repo = fetch_repo_files(github_url)
+        if not files:
+            return jsonify({"error": "No readable files found"}), 400
 
-    def generate():
-        try:
-            yield f"data: {json.dumps({'status': 'Fetching files from GitHub...'})}\n\n"
-            files, owner, repo = fetch_repo_files(github_url)
-            if not files:
-                yield f"data: {json.dumps({'error': 'No readable files found'})}\n\n"
-                return
+        vs = RepoVectorStore()
+        vs.build(files)
+        summary = generate_repo_summary(files, owner, repo)
 
-            yield f"data: {json.dumps({'status': f'Embedding {len(files)} files...'})}\n\n"
-            vs = RepoVectorStore()
-            vs.build(files)
+        session["vector_store"] = vs
+        session["summary"] = summary
+        session["owner"] = owner
+        session["repo"] = repo
+        session["files_count"] = len(files)
 
-            yield f"data: {json.dumps({'status': 'Generating summary...'})}\n\n"
-            summary = generate_repo_summary(files, owner, repo)
-
-            session["vector_store"] = vs
-            session["summary"] = summary
-            session["owner"] = owner
-            session["repo"] = repo
-            session["files_count"] = len(files)
-
-            yield f"data: {json.dumps({'success': True, 'owner': owner, 'repo': repo, 'files_indexed': len(files), 'summary': summary})}\n\n"
-        except Exception as e:
-            print(f"[Error] {e}")
-            yield f"data: {json.dumps({'error': str(e)})}\n\n"
-
-    return Response(generate(), mimetype="text/event-stream",
-                    headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
-
+        return jsonify({
+            "success": True,
+            "owner": owner,
+            "repo": repo,
+            "files_indexed": len(files),
+            "summary": summary,
+        })
+    except Exception as e:
+        print(f"[Error] {e}")
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/api/ask", methods=["POST"])
 def ask():

@@ -29,69 +29,50 @@ async function loadRepo() {
   showOverlay(); setLoadBtn(true);
 
   try {
-    const response = await fetch(`${API}/load`, {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 300000); // 5 min
+
+    const res = await fetch(`${API}/load`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url }),
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || "Failed");
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+    document.getElementById("repoName").textContent = `${data.owner}/${data.repo}`;
+    document.getElementById("filesCount").textContent = data.files_indexed;
+    document.getElementById("repoSummary").textContent = data.summary;
+    document.getElementById("repoInfo").classList.remove("hidden");
 
-      const chunk = decoder.decode(value);
-      const lines = chunk.split("\n");
-
-      for (const line of lines) {
-        if (!line.startsWith("data: ")) continue;
-        try {
-          const data = JSON.parse(line.slice(6));
-
-          if (data.status) {
-            updateOverlayStatus(data.status);
-          }
-
-          if (data.error) {
-            hideOverlay();
-            alert("Error: " + data.error);
-            setLoadBtn(false);
-            return;
-          }
-
-          if (data.success) {
-            document.getElementById("repoName").textContent = `${data.owner}/${data.repo}`;
-            document.getElementById("filesCount").textContent = data.files_indexed;
-            document.getElementById("repoSummary").textContent = data.summary;
-            document.getElementById("repoInfo").classList.remove("hidden");
-
-            const sqList = document.getElementById("sqList");
-            sqList.innerHTML = "";
-            SUGGESTIONS.forEach((q) => {
-              const b = document.createElement("button");
-              b.className = "sq-item"; b.textContent = q;
-              b.onclick = () => { document.getElementById("questionInput").value = q; askQuestion(); };
-              sqList.appendChild(b);
-            });
-            document.getElementById("suggestedSection").classList.remove("hidden");
-            document.getElementById("chatTitle").textContent =
-              `${data.owner}/${data.repo}  ·  ${data.files_indexed} files indexed`;
-            document.getElementById("emptyState").classList.add("hidden");
-            document.getElementById("questionInput").disabled = false;
-            document.getElementById("askBtn").disabled = false;
-            repoLoaded = true;
-            hideOverlay();
-            addSysMsg(`✓ ${data.files_indexed} files indexed. Ask me anything!`);
-            setLoadBtn(false);
-          }
-        } catch (e) { /* skip malformed lines */ }
-      }
-    }
+    const sqList = document.getElementById("sqList");
+    sqList.innerHTML = "";
+    SUGGESTIONS.forEach((q) => {
+      const b = document.createElement("button");
+      b.className = "sq-item"; b.textContent = q;
+      b.onclick = () => { document.getElementById("questionInput").value = q; askQuestion(); };
+      sqList.appendChild(b);
+    });
+    document.getElementById("suggestedSection").classList.remove("hidden");
+    document.getElementById("chatTitle").textContent =
+      `${data.owner}/${data.repo}  ·  ${data.files_indexed} files indexed`;
+    document.getElementById("emptyState").classList.add("hidden");
+    document.getElementById("questionInput").disabled = false;
+    document.getElementById("askBtn").disabled = false;
+    repoLoaded = true;
+    hideOverlay();
+    addSysMsg(`✓ ${data.files_indexed} files indexed. Ask me anything!`);
   } catch (err) {
     hideOverlay();
-    alert("Error: " + err.message);
+    if (err.name === "AbortError") {
+      alert("Request timed out. The repo may be too large or the server is still waking up. Please try again.");
+    } else {
+      alert("Error: " + err.message);
+    }
+  } finally {
     setLoadBtn(false);
   }
 }

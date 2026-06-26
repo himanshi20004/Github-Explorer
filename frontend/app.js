@@ -26,50 +26,72 @@ marked.setOptions({
 async function loadRepo() {
   const url = document.getElementById("repoUrl").value.trim();
   if (!url) return alert("Please enter a GitHub URL");
-
-  showLoadingOverlay();
-  setLoadBtn(true);
+  showOverlay(); setLoadBtn(true);
 
   try {
-    const res = await fetch(`${API}/load`, {
+    const response = await fetch(`${API}/load`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url }),
     });
-    const data = await res.json();
-    if (!res.ok || data.error) throw new Error(data.error || "Failed to load repo");
 
-    document.getElementById("repoName").textContent = `${data.owner}/${data.repo}`;
-    document.getElementById("filesCount").textContent = data.files_indexed;
-    document.getElementById("repoSummary").textContent = data.summary;
-    document.getElementById("repoInfo").classList.remove("hidden");
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
 
-    const sqList = document.getElementById("sqList");
-    sqList.innerHTML = "";
-    SUGGESTED_QUESTIONS.forEach((q) => {
-      const btn = document.createElement("button");
-      btn.className = "sq-item";
-      btn.textContent = q;
-      btn.onclick = () => {
-        document.getElementById("questionInput").value = q;
-        askQuestion();
-      };
-      sqList.appendChild(btn);
-    });
-    document.getElementById("suggestedSection").classList.remove("hidden");
-    document.getElementById("chatHeaderTitle").textContent =
-      `${data.owner}/${data.repo}  ·  ${data.files_indexed} files indexed`;
-    document.getElementById("emptyState").classList.add("hidden");
-    document.getElementById("questionInput").disabled = false;
-    document.getElementById("askBtn").disabled = false;
-    repoLoaded = true;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
 
-    hideLoadingOverlay();
-    addSystemMessage(`✓ Repository loaded — ${data.files_indexed} files indexed. Ask me anything.`);
+      const chunk = decoder.decode(value);
+      const lines = chunk.split("\n");
+
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
+        try {
+          const data = JSON.parse(line.slice(6));
+
+          if (data.status) {
+            updateOverlayStatus(data.status);
+          }
+
+          if (data.error) {
+            hideOverlay();
+            alert("Error: " + data.error);
+            setLoadBtn(false);
+            return;
+          }
+
+          if (data.success) {
+            document.getElementById("repoName").textContent = `${data.owner}/${data.repo}`;
+            document.getElementById("filesCount").textContent = data.files_indexed;
+            document.getElementById("repoSummary").textContent = data.summary;
+            document.getElementById("repoInfo").classList.remove("hidden");
+
+            const sqList = document.getElementById("sqList");
+            sqList.innerHTML = "";
+            SUGGESTIONS.forEach((q) => {
+              const b = document.createElement("button");
+              b.className = "sq-item"; b.textContent = q;
+              b.onclick = () => { document.getElementById("questionInput").value = q; askQuestion(); };
+              sqList.appendChild(b);
+            });
+            document.getElementById("suggestedSection").classList.remove("hidden");
+            document.getElementById("chatTitle").textContent =
+              `${data.owner}/${data.repo}  ·  ${data.files_indexed} files indexed`;
+            document.getElementById("emptyState").classList.add("hidden");
+            document.getElementById("questionInput").disabled = false;
+            document.getElementById("askBtn").disabled = false;
+            repoLoaded = true;
+            hideOverlay();
+            addSysMsg(`✓ ${data.files_indexed} files indexed. Ask me anything!`);
+            setLoadBtn(false);
+          }
+        } catch (e) { /* skip malformed lines */ }
+      }
+    }
   } catch (err) {
-    hideLoadingOverlay();
+    hideOverlay();
     alert("Error: " + err.message);
-  } finally {
     setLoadBtn(false);
   }
 }
@@ -110,6 +132,11 @@ function handleKey(e) {
   }
   autoResize(e.target);
 }
+
+function updateOverlayStatus(msg) {
+  const p = document.querySelector(".load-card p");
+  if (p) p.textContent = msg;
+} 
 
 function autoResize(el) {
   el.style.height = "auto";

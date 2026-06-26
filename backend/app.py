@@ -1,8 +1,9 @@
 import os
+import json
 from dotenv import load_dotenv
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response, send_from_directory
 from flask_cors import CORS
 
 from fetcher import fetch_repo_files
@@ -12,7 +13,6 @@ from agent import answer_question, generate_repo_summary
 app = Flask(__name__)
 CORS(app)
 
-# In-memory session store (single user / demo)
 session = {
     "vector_store": None,
     "summary": "",
@@ -24,45 +24,43 @@ session = {
 
 @app.route("/api/load", methods=["POST"])
 def load_repo():
-    """Fetch repo, embed files, build FAISS index."""
     data = request.json
     github_url = data.get("url", "").strip()
-
     if not github_url:
         return jsonify({"error": "No URL provided"}), 400
 
-    try:
-        files, owner, repo = fetch_repo_files(github_url)
-        if not files:
-            return jsonify({"error": "No readable files found in this repository."}), 400
+    def generate():
+        try:
+            yield f"data: {json.dumps({'status': 'Fetching files from GitHub...'})}\n\n"
+            files, owner, repo = fetch_repo_files(github_url)
+            if not files:
+                yield f"data: {json.dumps({'error': 'No readable files found'})}\n\n"
+                return
 
-        vs = RepoVectorStore()
-        vs.build(files)
+            yield f"data: {json.dumps({'status': f'Embedding {len(files)} files...'})}\n\n"
+            vs = RepoVectorStore()
+            vs.build(files)
 
-        summary = generate_repo_summary(files, owner, repo)
+            yield f"data: {json.dumps({'status': 'Generating summary...'})}\n\n"
+            summary = generate_repo_summary(files, owner, repo)
 
-        session["vector_store"] = vs
-        session["summary"] = summary
-        session["owner"] = owner
-        session["repo"] = repo
-        session["files_count"] = len(files)
+            session["vector_store"] = vs
+            session["summary"] = summary
+            session["owner"] = owner
+            session["repo"] = repo
+            session["files_count"] = len(files)
 
-        return jsonify({
-            "success": True,
-            "owner": owner,
-            "repo": repo,
-            "files_indexed": len(files),
-            "summary": summary,
-        })
+            yield f"data: {json.dumps({'success': True, 'owner': owner, 'repo': repo, 'files_indexed': len(files), 'summary': summary})}\n\n"
+        except Exception as e:
+            print(f"[Error] {e}")
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
 
-    except Exception as e:
-        print(f"[Error] {e}")
-        return jsonify({"error": str(e)}), 500
+    return Response(generate(), mimetype="text/event-stream",
+                    headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
 @app.route("/api/ask", methods=["POST"])
 def ask():
-    """Answer a question about the loaded repo."""
     if session["vector_store"] is None:
         return jsonify({"error": "No repository loaded. Please load a repo first."}), 400
 
@@ -80,7 +78,6 @@ def ask():
             repo=session["repo"],
         )
         return jsonify(result)
-
     except Exception as e:
         print(f"[Error] {e}")
         return jsonify({"error": str(e)}), 500
@@ -97,4 +94,5 @@ def status():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)

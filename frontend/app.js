@@ -1,4 +1,4 @@
-const API = "http://localhost:5000/api";
+const API = "https://github-explorer-evv8.onrender.com/api";
 
 const SUGGESTED_QUESTIONS = [
   "How does this project work overall?",

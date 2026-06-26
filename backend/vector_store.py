@@ -3,7 +3,7 @@ import numpy as np
 from embedder import embed_texts, embed_query, EMBED_DIM
 
 
-def chunk_file(path: str, content: str, max_chars: int = 1500) -> list[dict]:
+def chunk_file(path: str, content: str, max_chars: int = 5000) ->  list[dict]:
     """Split a file into overlapping chunks."""
     chunks = []
     lines = content.split("\n")
@@ -51,7 +51,7 @@ class RepoVectorStore:
         print(f"[VectorStore] Created {len(self.chunks)} chunks")
         texts = [c["text"] for c in self.chunks]
 
-        print("[VectorStore] Embedding chunks with Gemini...")
+        print("[VectorStore] Embedding chunks with Cohere...")
         embeddings = embed_texts(texts)
 
         self.index = faiss.IndexFlatIP(EMBED_DIM)  # Inner product (cosine after normalize)

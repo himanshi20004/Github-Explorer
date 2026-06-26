@@ -80,7 +80,7 @@ def fetch_repo_files(github_url: str) -> list[dict]:
 
     print(f"[Fetcher] Found {len(text_blobs)} candidate files (filtered from {len(blobs)})")
 
-    for item in text_blobs[:80]:  # cap at 80 files to avoid rate limits
+    for item in text_blobs[:40]:  # cap at 80 files to avoid rate limits
         path = item["path"]
         content = fetch_file_content(owner, repo, path)
         if content and content.strip():

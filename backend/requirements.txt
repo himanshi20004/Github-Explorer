@@ -13,3 +13,4 @@ python-dotenv
 numpy
 tiktoken
 gunicorn
+cohere

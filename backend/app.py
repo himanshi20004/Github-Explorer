@@ -11,7 +11,7 @@ from vector_store import RepoVectorStore
 from agent import answer_question, generate_repo_summary
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=False)
 
 session = {
     "vector_store": None,

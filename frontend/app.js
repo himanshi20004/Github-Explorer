@@ -57,7 +57,7 @@ async function loadRepo() {
       sqList.appendChild(b);
     });
     document.getElementById("suggestedSection").classList.remove("hidden");
-    document.getElementById("chatTitle").textContent =
+    document.getElementById("chatHeaderTitle").textContent =
       `${data.owner}/${data.repo}  ·  ${data.files_indexed} files indexed`;
     document.getElementById("emptyState").classList.add("hidden");
     document.getElementById("questionInput").disabled = false;
@@ -176,7 +176,7 @@ function addAIMessage(text, sources) {
   scrollChat();
 }
 
-function addSystemMessage(text) {
+function addSysMsg(text)  {
   const msgs = document.getElementById("messages");
   const el = document.createElement("div");
   el.className = "system-msg";
@@ -209,7 +209,7 @@ function addThinking() {
 }
 
 /* ── Overlay ── */
-function showLoadingOverlay() {
+function showOverlay() {
   const overlay = document.createElement("div");
   overlay.id = "loadOverlay";
   overlay.className = "load-overlay";
@@ -225,7 +225,7 @@ function showLoadingOverlay() {
   document.body.appendChild(overlay);
 }
 
-function hideLoadingOverlay() {
+function hideOverlay() {
   const el = document.getElementById("loadOverlay");
   if (el) el.remove();
 }

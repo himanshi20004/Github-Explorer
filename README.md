@@ -1,12 +1,14 @@
 # 🧠 RepoMind — AI-Powered GitHub Repo Explorer
 
+**Live Demo:** [Click here to view the app](https://github-explorer-bl8d.vercel.app/)
+
 RepoMind is a sleek, intelligent repository explorer that allows developers to paste any public GitHub repository URL and instantly analyze its architecture, file structures, and code logic using AI. Built with a pristine, high-contrast light workspace for ultimate code readability.
 
 <p align="center">
   <img src="./assets/Screenshot 2026-06-23 120719.png" alt="RepoMind Dashboard Preview" width="100%">
 </p>
 
-**Live Demo:** [Click here to view the app](https://github-explorer-bl8d.vercel.app/)
+
 ---
 
 ## 🎯 System Architecture & Data Flow

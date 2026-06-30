@@ -6,6 +6,7 @@ RepoMind is a sleek, intelligent repository explorer that allows developers to p
   <img src="./assets/Screenshot 2026-06-23 120719.png" alt="RepoMind Dashboard Preview" width="100%">
 </p>
 
+**Live Demo:** [Click here to view the app](https://github-explorer-bl8d.vercel.app/)
 ---
 
 ## 🎯 System Architecture & Data Flow
